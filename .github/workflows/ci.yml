@@ -1,1 +1,64 @@
+name: CI/CD FitZone
 
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  pruebas:
+    name: Pruebas + cobertura (>=80%)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - name: Instalar dependencias
+        run: pip install -r requirements-dev.txt
+      - name: Ejecutar pruebas unitarias y de integración
+        run: pytest --cov=src --cov-report=term-missing --cov-report=xml --cov-fail-under=80
+      - name: Verificar que la documentación generada está al día
+        run: |
+          python scripts/export_openapi.py
+          python scripts/generar_docs.py
+          python scripts/trazabilidad.py
+          git diff --exit-code docs/ || (echo "::error::Regenera la documentación (scripts/*.py) y haz commit" && exit 1)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml
+
+  docker:
+    name: Docker Compose (DB + App + Tests)
+    needs: pruebas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pruebas contra PostgreSQL con docker compose
+        run: docker compose --profile test run --rm --build tests
+      - name: Humo de la app (arranca y responde /health)
+        run: |
+          docker compose up -d --build app
+          for i in $(seq 1 30); do curl -fsS http://localhost:8000/health && break || sleep 2; done
+          curl -fsS http://localhost:8000/openapi.json > /dev/null
+      - name: Apagar
+        if: always()
+        run: docker compose down -v
+
+  despliegue:
+    name: Despliegue (CD)
+    needs: [pruebas, docker]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    env:
+      RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+    steps:
+      - name: Disparar despliegue en Render
+        if: env.RENDER_DEPLOY_HOOK_URL != ''
+        run: curl -fsS -X POST "$RENDER_DEPLOY_HOOK_URL"
+      - name: Despliegue omitido (falta el secreto RENDER_DEPLOY_HOOK_URL)
+        if: env.RENDER_DEPLOY_HOOK_URL == ''
+        run: echo "Configura el secreto RENDER_DEPLOY_HOOK_URL en Settings > Secrets para activar el CD."

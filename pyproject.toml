@@ -1,0 +1,17 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+markers = [
+    "us(*ids): trazabilidad - historia de usuario y escenario Gherkin que verifica la prueba (ej. us('US-02', 'E1'))",
+]
+filterwarnings = ["ignore::DeprecationWarning", "ignore::sqlalchemy.exc.SAWarning", "ignore:Using .httpx. with .starlette.testclient"]
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+omit = ["src/api/asgi.py"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+fail_under = 80

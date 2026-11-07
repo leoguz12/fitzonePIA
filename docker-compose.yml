@@ -1,0 +1,58 @@
+# FitZone: base de datos (PostgreSQL) + aplicación (API) + pruebas, en un entorno reproducible.
+#
+#   docker compose up --build                       -> DB + App   (http://localhost:8000/docs)
+#   docker compose --profile test run --rm tests    -> ejecuta la suite de pruebas contra PostgreSQL
+#   docker compose down -v                          -> apaga todo y borra los datos
+#
+# Toda la configuración viene de variables de entorno (archivo .env, ver .env.example).
+name: fitzone
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-fitzone}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fitzone_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-fitzone}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/initdb:/docker-entrypoint-initdb.d:ro   # crea la BD fitzone_test para las pruebas
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fitzone} -d ${POSTGRES_DB:-fitzone}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  app:
+    build:
+      context: .
+      target: runtime
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-fitzone}:${POSTGRES_PASSWORD:-fitzone_dev}@db:5432/${POSTGRES_DB:-fitzone}
+      TOLERANCIA_MINUTOS: ${TOLERANCIA_MINUTOS:-10}
+      LIMITE_CANCELACION_HORAS: ${LIMITE_CANCELACION_HORAS:-2}
+      TARIFA_MENSUAL: ${TARIFA_MENSUAL:-600.00}
+      TARIFA_TRIMESTRAL: ${TARIFA_TRIMESTRAL:-1500.00}
+      TARIFA_ANUAL: ${TARIFA_ANUAL:-5000.00}
+      TARIFA_SESION_ENTRENAMIENTO: ${TARIFA_SESION_ENTRENAMIENTO:-300.00}
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  tests:
+    build:
+      context: .
+      target: test
+    profiles: ["test"]
+    environment:
+      TEST_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-fitzone}:${POSTGRES_PASSWORD:-fitzone_dev}@db:5432/${POSTGRES_TEST_DB:-fitzone_test}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

@@ -1,0 +1,1765 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FitZone API",
+    "description": "\nAPI REST de **FitZone**: membresías, control de acceso, reservas de clases especiales,\nlista de espera automática, No-Shows y reportes de demanda.\n\nCódigos de error: `402` requiere pago adicional · `403` acceso denegado · `404` no existe ·\n`409` regla de negocio / transición inválida · `422` datos inválidos.\n",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/socios": {
+      "post": {
+        "tags": [
+          "Socios y membresías"
+        ],
+        "summary": "Registrar socio",
+        "operationId": "registrar_socio_socios_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SocioIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SocioOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/socios/{socio_id}": {
+      "get": {
+        "tags": [
+          "Socios y membresías"
+        ],
+        "summary": "Consultar socio (incluye advertencias y no-shows)",
+        "operationId": "obtener_socio_socios__socio_id__get",
+        "parameters": [
+          {
+            "name": "socio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Socio Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SocioOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/socios/{socio_id}/membresia": {
+      "post": {
+        "tags": [
+          "Socios y membresías"
+        ],
+        "summary": "US-11 E1: contratar membresía (cobra la tarifa del plan)",
+        "operationId": "contratar_socios__socio_id__membresia_post",
+        "parameters": [
+          {
+            "name": "socio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Socio Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContratarIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MembresiaOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Socios y membresías"
+        ],
+        "summary": "Consultar membresía con estado actualizado",
+        "operationId": "obtener_membresia_socios__socio_id__membresia_get",
+        "parameters": [
+          {
+            "name": "socio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Socio Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MembresiaOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/socios/{socio_id}/membresia/renovacion": {
+      "post": {
+        "tags": [
+          "Socios y membresías"
+        ],
+        "summary": "Renovar membresía",
+        "operationId": "renovar_socios__socio_id__membresia_renovacion_post",
+        "parameters": [
+          {
+            "name": "socio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Socio Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MembresiaOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/socios/{socio_id}/membresia/mejora": {
+      "post": {
+        "tags": [
+          "Socios y membresías"
+        ],
+        "summary": "US-11 E2: mejorar plan (vencimiento desde el fin del mes actual)",
+        "operationId": "mejorar_socios__socio_id__membresia_mejora_post",
+        "parameters": [
+          {
+            "name": "socio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Socio Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MembresiaOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/socios/{socio_id}/suspension": {
+      "post": {
+        "tags": [
+          "Socios y membresías"
+        ],
+        "summary": "US-06: suspender membresía",
+        "operationId": "suspender_socios__socio_id__suspension_post",
+        "parameters": [
+          {
+            "name": "socio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Socio Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SuspensionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MembresiaOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Socios y membresías"
+        ],
+        "summary": "US-06 E2: regularizar (reactiva la membresía)",
+        "operationId": "reactivar_socios__socio_id__suspension_delete",
+        "parameters": [
+          {
+            "name": "socio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Socio Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MembresiaOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/socios/{socio_id}/notificaciones": {
+      "get": {
+        "tags": [
+          "Socios y membresías"
+        ],
+        "summary": "Notificaciones enviadas al socio",
+        "operationId": "notificaciones_socios__socio_id__notificaciones_get",
+        "parameters": [
+          {
+            "name": "socio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Socio Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/socios/{socio_id}/accesos": {
+      "get": {
+        "tags": [
+          "Socios y membresías"
+        ],
+        "summary": "Historial de accesos del socio",
+        "operationId": "accesos_socios__socio_id__accesos_get",
+        "parameters": [
+          {
+            "name": "socio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Socio Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/socios/{socio_id}/entrenamiento-personal": {
+      "post": {
+        "tags": [
+          "Socios y membresías"
+        ],
+        "summary": "US-13: contratar paquete de entrenamiento personal (requiere membresía vigente)",
+        "operationId": "contratar_entrenamiento_socios__socio_id__entrenamiento_personal_post",
+        "parameters": [
+          {
+            "name": "socio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Socio Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntrenamientoIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accesos": {
+      "post": {
+        "tags": [
+          "Control de acceso"
+        ],
+        "summary": "US-01 / US-06 / US-14: validar ingreso en recepción o torniquete",
+        "operationId": "validar_ingreso_accesos_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccesoIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccesoOut"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Alerta roja: acceso denegado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccesoOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/instructores": {
+      "post": {
+        "tags": [
+          "Instructores"
+        ],
+        "summary": "Registrar instructor",
+        "operationId": "registrar_instructores_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InstructorIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/instructores/{instructor_id}/clases": {
+      "get": {
+        "tags": [
+          "Instructores"
+        ],
+        "summary": "US-08: horario y aforo de las clases del instructor en una fecha",
+        "operationId": "clases_del_dia_instructores__instructor_id__clases_get",
+        "parameters": [
+          {
+            "name": "instructor_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Instructor Id"
+            }
+          },
+          {
+            "name": "fecha",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Fecha"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/clases": {
+      "get": {
+        "tags": [
+          "Clases especiales y reservas"
+        ],
+        "summary": "US-05 E2 / US-15: catálogo de clases programadas con cupos disponibles",
+        "operationId": "catalogo_clases_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Clases especiales y reservas"
+        ],
+        "summary": "Programar una clase especial",
+        "operationId": "programar_clases_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClaseIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/clases/{clase_id}/aforo": {
+      "get": {
+        "tags": [
+          "Clases especiales y reservas"
+        ],
+        "summary": "US-08 / US-15: capacidad, inscritos y lista de espera",
+        "operationId": "aforo_clases__clase_id__aforo_get",
+        "parameters": [
+          {
+            "name": "clase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Clase Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/clases/{clase_id}/reservas": {
+      "post": {
+        "tags": [
+          "Clases especiales y reservas"
+        ],
+        "summary": "US-02 / US-03: reservar (201) o entrar a lista de espera (202); 402 si el plan no incluye la clase",
+        "operationId": "reservar_clases__clase_id__reservas_post",
+        "parameters": [
+          {
+            "name": "clase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Clase Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SocioRefIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/clases/{clase_id}/pagos-fuera-de-plan": {
+      "post": {
+        "tags": [
+          "Clases especiales y reservas"
+        ],
+        "summary": "US-12: cobrar en mostrador una clase fuera de plan y habilitar el cupo",
+        "operationId": "pagar_fuera_de_plan_clases__clase_id__pagos_fuera_de_plan_post",
+        "parameters": [
+          {
+            "name": "clase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Clase Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PagoClaseIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/clases/{clase_id}/reservas/{reserva_id}": {
+      "delete": {
+        "tags": [
+          "Clases especiales y reservas"
+        ],
+        "summary": "US-04: cancelar reserva (tardía = advertencia)",
+        "operationId": "cancelar_reserva_clases__clase_id__reservas__reserva_id__delete",
+        "parameters": [
+          {
+            "name": "clase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Clase Id"
+            }
+          },
+          {
+            "name": "reserva_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Reserva Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/clases/{clase_id}/lista-espera/{socio_id}": {
+      "delete": {
+        "tags": [
+          "Clases especiales y reservas"
+        ],
+        "summary": "US-03 E2: abandonar la lista de espera",
+        "operationId": "abandonar_lista_clases__clase_id__lista_espera__socio_id__delete",
+        "parameters": [
+          {
+            "name": "clase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Clase Id"
+            }
+          },
+          {
+            "name": "socio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Socio Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/clases/{clase_id}/asistencias": {
+      "post": {
+        "tags": [
+          "Clases especiales y reservas"
+        ],
+        "summary": "US-07 E2: registrar asistencia (dentro de tolerancia) o No-Show",
+        "operationId": "asistencia_clases__clase_id__asistencias_post",
+        "parameters": [
+          {
+            "name": "clase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Clase Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SocioRefIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/clases/{clase_id}/no-shows": {
+      "post": {
+        "tags": [
+          "Clases especiales y reservas"
+        ],
+        "summary": "US-07 E1: procesar No-Shows al terminar la tolerancia",
+        "operationId": "procesar_no_shows_clases__clase_id__no_shows_post",
+        "parameters": [
+          {
+            "name": "clase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Clase Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/clases/{clase_id}/cancelacion": {
+      "post": {
+        "tags": [
+          "Clases especiales y reservas"
+        ],
+        "summary": "US-09 E1: el instructor cancela la sesión y se notifica a los inscritos",
+        "operationId": "cancelar_sesion_clases__clase_id__cancelacion_post",
+        "parameters": [
+          {
+            "name": "clase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Clase Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelarSesionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/clases/{clase_id}/instructor-suplente": {
+      "put": {
+        "tags": [
+          "Clases especiales y reservas"
+        ],
+        "summary": "US-09 E2: el administrador asigna instructor suplente",
+        "operationId": "suplente_clases__clase_id__instructor_suplente_put",
+        "parameters": [
+          {
+            "name": "clase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Clase Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SuplenteIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/clases/{clase_id}/finalizacion": {
+      "post": {
+        "tags": [
+          "Clases especiales y reservas"
+        ],
+        "summary": "Finalizar la clase (pendientes pasan a No-Show)",
+        "operationId": "finalizar_clases__clase_id__finalizacion_post",
+        "parameters": [
+          {
+            "name": "clase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Clase Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reportes/demanda": {
+      "get": {
+        "tags": [
+          "Reportes (CQRS - lectura)"
+        ],
+        "summary": "US-10: tasa de ocupación y lugares vacíos por clase, con filtro de fechas",
+        "operationId": "demanda_reportes_demanda_get",
+        "parameters": [
+          {
+            "name": "desde",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Desde"
+            }
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Hasta"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "Sistema"
+        ],
+        "summary": "Estado del servicio",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Health Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AccesoIn": {
+        "properties": {
+          "socio_id": {
+            "type": "string",
+            "title": "Socio Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "socio_id"
+        ],
+        "title": "AccesoIn"
+      },
+      "AccesoOut": {
+        "properties": {
+          "permitido": {
+            "type": "boolean",
+            "title": "Permitido"
+          },
+          "alerta": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alerta",
+            "description": "ROJA cuando se deniega el paso"
+          },
+          "codigo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Codigo"
+          },
+          "mensaje": {
+            "type": "string",
+            "title": "Mensaje"
+          },
+          "advertencia": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Advertencia"
+          },
+          "reservas_hoy": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Reservas Hoy",
+            "description": "Clases reservadas por el socio para hoy (US-14)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "permitido",
+          "codigo",
+          "mensaje",
+          "advertencia"
+        ],
+        "title": "AccesoOut"
+      },
+      "CancelarSesionIn": {
+        "properties": {
+          "instructor_id": {
+            "type": "string",
+            "title": "Instructor Id"
+          },
+          "motivo": {
+            "type": "string",
+            "title": "Motivo",
+            "examples": [
+              "Instructor enfermo"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "instructor_id",
+          "motivo"
+        ],
+        "title": "CancelarSesionIn"
+      },
+      "ClaseIn": {
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "title": "Nombre",
+            "examples": [
+              "Yoga Matutino"
+            ]
+          },
+          "instructor_id": {
+            "type": "string",
+            "title": "Instructor Id"
+          },
+          "inicio": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Inicio",
+            "description": "Hora local del gimnasio",
+            "examples": [
+              "2026-11-10T07:00:00"
+            ]
+          },
+          "duracion_min": {
+            "type": "integer",
+            "title": "Duracion Min",
+            "examples": [
+              60
+            ]
+          },
+          "capacidad": {
+            "type": "integer",
+            "title": "Capacidad",
+            "examples": [
+              15
+            ]
+          },
+          "servicio_requerido": {
+            "type": "string",
+            "title": "Servicio Requerido",
+            "description": "Servicio que debe incluir el plan del socio",
+            "examples": [
+              "yoga"
+            ]
+          },
+          "precio_extra": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Precio Extra",
+            "description": "Costo si el plan no incluye la clase",
+            "examples": [
+              "150.00"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "nombre",
+          "instructor_id",
+          "inicio",
+          "duracion_min",
+          "capacidad",
+          "servicio_requerido",
+          "precio_extra"
+        ],
+        "title": "ClaseIn"
+      },
+      "ContratarIn": {
+        "properties": {
+          "tipo": {
+            "$ref": "#/components/schemas/TipoPlan",
+            "examples": [
+              "TRIMESTRAL"
+            ]
+          },
+          "referencia_pago": {
+            "type": "string",
+            "title": "Referencia Pago",
+            "description": "Empieza con FAIL para simular un rechazo",
+            "examples": [
+              "TARJETA-4242"
+            ]
+          },
+          "fecha_inicio": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Inicio"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tipo",
+          "referencia_pago"
+        ],
+        "title": "ContratarIn"
+      },
+      "EntrenamientoIn": {
+        "properties": {
+          "instructor_id": {
+            "type": "string",
+            "title": "Instructor Id"
+          },
+          "sesiones": {
+            "type": "integer",
+            "title": "Sesiones",
+            "examples": [
+              5
+            ]
+          },
+          "referencia_pago": {
+            "type": "string",
+            "title": "Referencia Pago",
+            "description": "Se ignora si el plan ya incluye el servicio",
+            "examples": [
+              "TARJETA-OK"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "instructor_id",
+          "sesiones",
+          "referencia_pago"
+        ],
+        "title": "EntrenamientoIn"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "InstructorIn": {
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "title": "Nombre",
+            "examples": [
+              "Laura Pérez"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "nombre"
+        ],
+        "title": "InstructorIn"
+      },
+      "MembresiaOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "socio_id": {
+            "type": "string",
+            "title": "Socio Id"
+          },
+          "tipo": {
+            "$ref": "#/components/schemas/TipoPlan"
+          },
+          "servicios_incluidos": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Servicios Incluidos"
+          },
+          "fecha_inicio": {
+            "type": "string",
+            "format": "date",
+            "title": "Fecha Inicio"
+          },
+          "fecha_vencimiento": {
+            "type": "string",
+            "format": "date",
+            "title": "Fecha Vencimiento"
+          },
+          "estado": {
+            "type": "string",
+            "title": "Estado"
+          },
+          "motivo_suspension": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo Suspension"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "socio_id",
+          "tipo",
+          "servicios_incluidos",
+          "fecha_inicio",
+          "fecha_vencimiento",
+          "estado",
+          "motivo_suspension"
+        ],
+        "title": "MembresiaOut"
+      },
+      "PagoClaseIn": {
+        "properties": {
+          "socio_id": {
+            "type": "string",
+            "title": "Socio Id"
+          },
+          "referencia_pago": {
+            "type": "string",
+            "title": "Referencia Pago",
+            "examples": [
+              "TARJETA-4242"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "socio_id",
+          "referencia_pago"
+        ],
+        "title": "PagoClaseIn"
+      },
+      "PlanIn": {
+        "properties": {
+          "tipo": {
+            "$ref": "#/components/schemas/TipoPlan"
+          },
+          "referencia_pago": {
+            "type": "string",
+            "title": "Referencia Pago",
+            "examples": [
+              "TARJETA-4242"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "tipo",
+          "referencia_pago"
+        ],
+        "title": "PlanIn"
+      },
+      "SocioIn": {
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "title": "Nombre",
+            "examples": [
+              "Ana Torres"
+            ]
+          },
+          "email": {
+            "type": "string",
+            "title": "Email",
+            "examples": [
+              "ana@fitzone.mx"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "nombre",
+          "email"
+        ],
+        "title": "SocioIn"
+      },
+      "SocioOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "advertencias": {
+            "type": "integer",
+            "title": "Advertencias"
+          },
+          "no_shows": {
+            "type": "integer",
+            "title": "No Shows"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "nombre",
+          "email",
+          "advertencias",
+          "no_shows"
+        ],
+        "title": "SocioOut"
+      },
+      "SocioRefIn": {
+        "properties": {
+          "socio_id": {
+            "type": "string",
+            "title": "Socio Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "socio_id"
+        ],
+        "title": "SocioRefIn"
+      },
+      "SuplenteIn": {
+        "properties": {
+          "instructor_id": {
+            "type": "string",
+            "title": "Instructor Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "instructor_id"
+        ],
+        "title": "SuplenteIn"
+      },
+      "SuspensionIn": {
+        "properties": {
+          "motivo": {
+            "type": "string",
+            "title": "Motivo",
+            "examples": [
+              "Pago pendiente"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "motivo"
+        ],
+        "title": "SuspensionIn"
+      },
+      "TipoPlan": {
+        "type": "string",
+        "enum": [
+          "MENSUAL",
+          "TRIMESTRAL",
+          "ANUAL"
+        ],
+        "title": "TipoPlan"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
